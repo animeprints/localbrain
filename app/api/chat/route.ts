@@ -49,24 +49,29 @@ export async function POST(request: NextRequest) {
 
   const { provider, apiKey } = creds
 
-  let queryEmbedding: number[]
+  let queryEmbedding: number[] | null = null
   try {
     queryEmbedding = await callEmbedding(query, { provider, apiKey })
-  } catch {
-    return Response.json({ error: 'Failed to embed query. Check your provider API key.' }, { status: 500 })
+  } catch (err) {
+    console.error('Embedding failed, using text search:', err)
   }
 
   let similarChunks: Array<{ content: string; note_id: string; notes?: unknown }> = []
 
-  const rpcResult = await supabase.rpc('match_chunks', {
-    query_embedding: JSON.stringify(queryEmbedding),
-    match_count: 5,
-    user_id_input: user!.id,
-  })
+  if (queryEmbedding) {
+    const rpcResult = await supabase.rpc('match_chunks', {
+      query_embedding: JSON.stringify(queryEmbedding),
+      match_count: 5,
+      user_id_input: user!.id,
+    })
 
-  if (rpcResult.data && Array.isArray(rpcResult.data) && rpcResult.data.length > 0) {
-    similarChunks = rpcResult.data as Array<{ content: string; note_id: string; notes?: unknown }>
-  } else {
+    if (rpcResult.data && Array.isArray(rpcResult.data) && rpcResult.data.length > 0) {
+      similarChunks = rpcResult.data as Array<{ content: string; note_id: string; notes?: unknown }>
+    }
+  }
+
+  // Fallback to text search if no embedding results
+  if (similarChunks.length === 0) {
     const fallbackResult = await supabase
       .from('chunks')
       .select('id, content, note_id, notes(title)')
@@ -104,25 +109,32 @@ export async function POST(request: NextRequest) {
         const baseUrl = getProviderBaseUrl(provider)
         const isGemini = provider === 'gemini'
 
-        const res = await fetch(
-          isGemini
-            ? `https://generativelanguage.googleapis.com/v1beta/models/${getDefaultModel(provider)}:streamGenerateContent?alt=sse&key=${apiKey}`
-            : `${baseUrl}/chat/completions`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`,
-              ...(provider === 'openrouter' ? { 'HTTP-Referer': 'https://www.localbrain.in' } : {}),
-            },
-            body: JSON.stringify({
-              model: getDefaultModel(provider),
-              messages: allMessages,
-              stream: true,
-              max_tokens: 2048,
-            }),
-          }
-        )
+        const url = isGemini
+          ? `https://generativelanguage.googleapis.com/v1beta/models/${getDefaultModel(provider)}:streamGenerateContent?alt=sse&key=${apiKey}`
+          : `${baseUrl}/chat/completions`
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
+
+        if (!isGemini) {
+          headers['Authorization'] = `Bearer ${apiKey}`
+        }
+
+        if (provider === 'openrouter') {
+          headers['HTTP-Referer'] = 'https://www.localbrain.in'
+        }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model: getDefaultModel(provider),
+            messages: allMessages,
+            stream: true,
+            max_tokens: 2048,
+          }),
+        })
 
         if (!res.ok) {
           const errText = await res.text()
@@ -181,6 +193,7 @@ export async function POST(request: NextRequest) {
 
         controller.close()
       } catch (err) {
+        console.error('Chat stream error:', err)
         controller.enqueue(
           encoder.encode(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
         )

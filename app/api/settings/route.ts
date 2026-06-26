@@ -60,10 +60,13 @@ export async function PUT(request: NextRequest) {
   const supabase = await createClient()
 
   // Encrypt API keys before storing
-  const encryptedConfigs = provider_configs.map((c) => ({
-    ...c,
-    apiKey: c.apiKey && c.apiKey !== '••••••••' ? encrypt(c.apiKey) : c.apiKey,
-  }))
+  const encryptedConfigs = provider_configs.map((c) => {
+    if (c.apiKey && c.apiKey !== '••••••••') {
+      return { ...c, apiKey: encrypt(c.apiKey) }
+    }
+    // Don't overwrite existing key if not provided
+    return { ...c, apiKey: c.apiKey === undefined ? null : c.apiKey }
+  })
 
   const { error: upsertError } = await supabase
     .from('user_settings')
