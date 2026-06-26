@@ -6,7 +6,6 @@ import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import NoteEditor from '@/components/notes/NoteEditor'
 import NoteTemplates from '@/components/notes/NoteTemplates'
-import SmartSearch from '@/components/notes/SmartSearch'
 import ExportNotes from '@/components/notes/ExportNotes'
 import NoteTagManager from '@/components/notes/NoteTagManager'
 import StudyTools from '@/components/study/StudyTools'
@@ -238,7 +237,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-[#0a0a0c] text-[#fcfdff] border border-[rgba(255,255,255,0.14)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#3b9eff] focus:shadow-[0_0_12px_rgba(59,158,255,0.15)] placeholder:text-[#464a4d] transition-all duration-200"
         />
-        <SmartSearch onNavigate={(id) => { const note = notes.find((n) => n.id === id); if (note) { setSelectedNote(note); setSidebarOpen(false) } }} />
       </div>
 
       <div className="p-2 space-y-1">
@@ -253,17 +251,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           const { data } = await supabase.from('notes').insert({ user_id: user.id, title, content }).select().single()
           if (data) { setNotes([data, ...notes]); setSelectedNote(data); setSidebarOpen(false) }
         }} />
-        {notes.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full"
-            onClick={handleBatchIngest}
-            disabled={ingesting}
-          >
-            {ingesting ? 'Ingesting...' : `Batch Ingest (${notes.length})`}
-          </Button>
-        )}
+      </div>
+
+      <div className="p-2 border-t border-[rgba(255,255,255,0.06)] flex gap-1">
+        <Link href="/app/graph" onClick={() => setSidebarOpen(false)}
+          className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
+          Graph
+        </Link>
+        <Link href="/app/chat" onClick={() => setSidebarOpen(false)}
+          className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
+          Chat
+        </Link>
+        <Link href="/app/settings" onClick={() => setSidebarOpen(false)}
+          className="flex-1 text-center px-2 py-1.5 rounded-lg text-xs text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
+          Settings
+        </Link>
       </div>
 
       <div className="flex-1 overflow-auto p-2 space-y-1">
@@ -307,21 +309,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="p-2 border-t border-[rgba(255,255,255,0.06)] space-y-1">
-        <Link href="/app/graph" onClick={() => setSidebarOpen(false)}
-          className="block px-3 py-2 rounded-lg text-sm text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
-          Knowledge Graph
-        </Link>
-        <Link href="/app/chat" onClick={() => setSidebarOpen(false)}
-          className="block px-3 py-2 rounded-lg text-sm text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
-          Chat
-        </Link>
-        <Link href="/app/settings" onClick={() => setSidebarOpen(false)}
-          className="block px-3 py-2 rounded-lg text-sm text-[#a1a4a5] hover:bg-[#0a0a0c] hover:text-[#fcfdff] transition-colors">
-          Settings
-        </Link>
       </div>
     </div>
   )
