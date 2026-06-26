@@ -57,8 +57,8 @@ function buildOpenAICompatibleHeaders(apiKey: string, provider: ProviderName): R
   if (provider === 'openrouter') {
     return {
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://localmind.app',
-      'X-Title': 'LocalMind',
+      'HTTP-Referer': 'https://localbrain.in',
+      'X-Title': 'LocalBrain',
     }
   }
   return { 'Authorization': `Bearer ${apiKey}` }

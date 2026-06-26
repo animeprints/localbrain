@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${apiKey}`,
-              ...(provider === 'openrouter' ? { 'HTTP-Referer': 'https://localmind.app' } : {}),
+              ...(provider === 'openrouter' ? { 'HTTP-Referer': 'https://localbrain.in' } : {}),
             },
             body: JSON.stringify({
               model: getDefaultModel(provider),

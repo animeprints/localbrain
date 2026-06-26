@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LocalMind — Your knowledge, connected",
+  title: "LocalBrain — Your knowledge, connected",
   description: "AI-powered knowledge graph app. Turn your notes into a living knowledge graph with multi-provider LLM support.",
 };
 

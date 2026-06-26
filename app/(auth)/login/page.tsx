@@ -56,7 +56,7 @@ export default function LoginPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(59,158,255,0.06)_0%,transparent_70%)] rounded-full animate-glow-pulse pointer-events-none" />
       <div className="w-full max-w-sm relative">
         <div className="animate-fade-in-down text-center mb-8">
-          <h1 className="text-2xl font-medium text-[#fcfdff] mb-2">Sign in to LocalMind</h1>
+          <h1 className="text-2xl font-medium text-[#fcfdff] mb-2">Sign in to LocalBrain</h1>
           <p className="text-sm text-[#a1a4a5]">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-[#3b9eff] hover:underline transition-colors duration-200">

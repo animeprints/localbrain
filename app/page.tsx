@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#fcfdff] overflow-hidden">
       <nav className="animate-fade-in-down flex items-center justify-between px-8 h-16 border-b border-[rgba(255,255,255,0.06)]">
-        <span className="text-lg font-semibold tracking-tight">LocalMind</span>
+        <span className="text-lg font-semibold tracking-tight">LocalBrain</span>
         <div className="flex items-center gap-4">
           <Link href="/login" className="text-sm text-[#a1a4a5] hover:text-[#fcfdff] transition-colors duration-200">
             Sign in
@@ -37,7 +37,7 @@ export default function Home() {
             <span className="animate-fade-in-up delay-200">connected.</span>
           </h1>
           <p className="animate-fade-in-up delay-300 text-xl text-[rgba(252,253,255,0.86)] max-w-lg mb-10 leading-relaxed">
-            LocalMind turns your notes into a living knowledge graph with AI-powered search and chat.
+            LocalBrain turns your notes into a living knowledge graph with AI-powered search and chat.
             Bring your own LLM keys — we support 10+ providers with free tiers.
           </p>
           <Link
@@ -89,7 +89,7 @@ export default function Home() {
       </section>
 
       <footer className="px-8 py-16 border-t border-[rgba(255,255,255,0.04)] text-center text-sm text-[#888e90]">
-        <p>LocalMind — Your data stays yours. Self-hosted AI knowledge graph.</p>
+        <p>LocalBrain — Your data stays yours. Self-hosted AI knowledge graph.</p>
       </footer>
     </div>
   )

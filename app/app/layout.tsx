@@ -150,7 +150,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="w-64 border-r border-[rgba(255,255,255,0.06)] flex flex-col">
         <div className="p-4 border-b border-[rgba(255,255,255,0.06)]">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-semibold">LocalMind</span>
+            <span className="font-semibold">LocalBrain</span>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               Logout
             </Button>
