@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import NoteEditor from '@/components/notes/NoteEditor'
 
 interface Note {
   id: string
@@ -223,10 +224,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
             <div className="flex-1">
-              <iframe
-                src={`/app/note/${selectedNote.id}`}
-                className="w-full h-full border-0"
-                title="Note editor"
+              <NoteEditor
+                note={selectedNote}
+                onSave={handleSaveNote}
+                onDelete={handleDeleteNote}
               />
             </div>
           </div>
