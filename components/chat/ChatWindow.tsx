@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Button from '@/components/ui/Button'
+import toast from 'react-hot-toast'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -14,6 +15,25 @@ interface ChatWindowProps {
   apiKey: string
 }
 
+const STORAGE_KEY = 'localbrain-chat-history'
+
+function loadHistory(): Message[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function saveHistory(messages: Message[]) {
+  try {
+    const trimmed = messages.slice(-50)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+  } catch {}
+}
+
 export default function ChatWindow({ provider, apiKey }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -21,10 +41,14 @@ export default function ChatWindow({ provider, apiKey }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    setMessages(loadHistory())
+  }, [])
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!input.trim() || loading) return
 
     const userMessage: Message = { role: 'user', content: input }
@@ -68,23 +92,48 @@ export default function ChatWindow({ provider, apiKey }: ChatWindowProps) {
           fullContent += chunk
         }
 
-        setMessages([
+        const updated = [
           ...newMessages,
-          { role: 'assistant', content: fullContent, sources },
-        ])
+          { role: 'assistant' as const, content: fullContent, sources },
+        ]
+        setMessages(updated)
       }
-    } catch {
-      setMessages([
+
+      const final = [
         ...newMessages,
-        { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' },
-      ])
+        { role: 'assistant' as const, content: fullContent, sources },
+      ]
+      saveHistory(final)
+    } catch {
+      const err: Message = { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }
+      const withErr = [...newMessages, err]
+      setMessages(withErr)
+      saveHistory(withErr)
     } finally {
       setLoading(false)
     }
+  }, [input, loading, messages, provider, apiKey])
+
+  const clearHistory = () => {
+    setMessages([])
+    localStorage.removeItem(STORAGE_KEY)
+    toast.success('Chat cleared')
   }
 
   return (
     <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-[rgba(255,255,255,0.06)]">
+        <span className="text-sm text-[#a1a4a5]">Chat with your notes</span>
+        {messages.length > 0 && (
+          <button
+            onClick={clearHistory}
+            className="text-xs text-[#464a4d] hover:text-[#ff2047] transition-colors"
+          >
+            Clear history
+          </button>
+        )}
+      </div>
+
       <div className="flex-1 overflow-auto p-6 space-y-4">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-[#464a4d] text-sm">

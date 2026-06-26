@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Button from '@/components/ui/Button'
+import PdfUploader from './PdfUploader'
 
 interface NoteEditorProps {
   note: { id: string; title: string; content: string } | null
@@ -14,6 +15,7 @@ export default function NoteEditor({ note, onSave, onDelete }: NoteEditorProps) 
   const [content, setContent] = useState(note?.content ?? '')
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [showPdfUpload, setShowPdfUpload] = useState(false)
 
   const handleSave = async () => {
     setSaving(true)
@@ -22,6 +24,12 @@ export default function NoteEditor({ note, onSave, onDelete }: NoteEditorProps) 
     } finally {
       setSaving(false)
     }
+  }
+
+  const handlePdfUpload = (pdfContent: string, filename: string) => {
+    const separator = content ? '\n\n---\n\n' : ''
+    setContent(content + separator + `## ${filename}\n\n${pdfContent}`)
+    setShowPdfUpload(false)
   }
 
   return (
@@ -35,6 +43,13 @@ export default function NoteEditor({ note, onSave, onDelete }: NoteEditorProps) 
           className="bg-transparent text-[#fcfdff] text-xl font-medium focus:outline-none placeholder:text-[#464a4d] flex-1"
         />
         <div className="flex items-center gap-2 ml-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPdfUpload(!showPdfUpload)}
+          >
+            PDF
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -52,6 +67,12 @@ export default function NoteEditor({ note, onSave, onDelete }: NoteEditorProps) 
           )}
         </div>
       </div>
+
+      {showPdfUpload && (
+        <div className="px-6 py-4 border-b border-[rgba(255,255,255,0.06)]">
+          <PdfUploader onUpload={handlePdfUpload} />
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto p-6">
         {showPreview ? (
