@@ -1,34 +1,55 @@
-const rateLimits = new Map<string, { count: number; resetTime: number }>()
+import { cookies } from 'next/headers'
 
-export function checkRateLimit(
+const RATE_LIMIT_PREFIX = 'rl_'
+
+export async function checkRateLimit(
   key: string,
   maxRequests: number = 30,
   windowMs: number = 60000
-): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now()
-  const record = rateLimits.get(key)
+): Promise<{ allowed: boolean; remaining: number; resetIn: number }> {
+  const cookieStore = await cookies()
+  const cookieName = `${RATE_LIMIT_PREFIX}${key}`
+  const cookieValue = cookieStore.get(cookieName)?.value
 
-  if (!record || now > record.resetTime) {
-    rateLimits.set(key, { count: 1, resetTime: now + windowMs })
+  const now = Date.now()
+
+  if (!cookieValue) {
+    const expiry = now + windowMs
+    cookieStore.set(cookieName, `1:${expiry}`, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: Math.ceil(windowMs / 1000),
+    })
     return { allowed: true, remaining: maxRequests - 1, resetIn: windowMs }
   }
 
-  if (record.count >= maxRequests) {
-    const resetIn = record.resetTime - now
-    return { allowed: false, remaining: 0, resetIn }
+  const [countStr, expiryStr] = cookieValue.split(':')
+  const count = parseInt(countStr, 10) || 0
+  const expiry = parseInt(expiryStr, 10) || 0
+
+  if (now > expiry) {
+    const newExpiry = now + windowMs
+    cookieStore.set(cookieName, `1:${newExpiry}`, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: Math.ceil(windowMs / 1000),
+    })
+    return { allowed: true, remaining: maxRequests - 1, resetIn: windowMs }
   }
 
-  record.count++
-  return { allowed: true, remaining: maxRequests - record.count, resetIn: record.resetTime - now }
-}
+  if (count >= maxRequests) {
+    return { allowed: false, remaining: 0, resetIn: expiry - now }
+  }
 
-export function addRateLimitHeaders(
-  response: Response,
-  remaining: number,
-  resetIn: number
-): Response {
-  const headers = new Headers(response.headers)
-  headers.set('X-RateLimit-Remaining', remaining.toString())
-  headers.set('X-RateLimit-Reset', Math.ceil(resetIn / 1000).toString())
-  return new Response(response.body, { ...response, headers })
+  const newCount = count + 1
+  cookieStore.set(cookieName, `${newCount}:${expiry}`, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: Math.ceil((expiry - now) / 1000),
+  })
+
+  return { allowed: true, remaining: maxRequests - newCount, resetIn: expiry - now }
 }
