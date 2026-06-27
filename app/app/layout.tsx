@@ -8,6 +8,7 @@ import NoteEditor from '@/components/notes/NoteEditor'
 import NoteTemplates from '@/components/notes/NoteTemplates'
 import ExportNotes from '@/components/notes/ExportNotes'
 import NoteTagManager from '@/components/notes/NoteTagManager'
+import UrlImporter from '@/components/notes/UrlImporter'
 import StudyTools from '@/components/study/StudyTools'
 import CorporateTools from '@/components/corporate/CorporateTools'
 import PomodoroTimer from '@/components/study/PomodoroTimer'
@@ -349,6 +350,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Button variant="ghost" size="sm" onClick={() => handleIngest()} disabled={ingesting}>
               {ingesting ? 'Ingesting...' : 'Ingest to Graph'}
             </Button>
+            <UrlImporter onImport={(title, content) => { handleSaveNote(title, content) }} />
             <div className="flex-1" />
             <NoteTagManager noteId={selectedNote.id} />
             <ExportNotes notes={notes} selectedNote={selectedNote} />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import KnowledgeGraph from '@/components/graph/KnowledgeGraph'
+import GraphStats from '@/components/graph/GraphStats'
 import toast from 'react-hot-toast'
 
 interface GraphNode {
@@ -111,8 +112,14 @@ export default function GraphPage() {
   }
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 relative">
+    <div className="flex flex-col h-full">
+      {!loading && nodes.length > 0 && (
+        <div className="p-4 overflow-auto">
+          <GraphStats nodes={nodes} edges={edges} />
+        </div>
+      )}
+      <div className="flex-1 flex min-h-0">
+        <div className="flex-1 relative">
         {loading ? (
           <div className="flex items-center justify-center h-full text-[#464a4d]">
             Loading graph...
@@ -252,6 +259,7 @@ export default function GraphPage() {
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }
