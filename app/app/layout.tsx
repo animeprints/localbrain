@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useDeferredValue, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
@@ -80,10 +80,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [])
 
-  const filteredNotes = notes.filter((n) =>
-    n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const deferredSearch = useDeferredValue(searchQuery)
+
+  const filteredNotes = useMemo(() => notes.filter((n) =>
+    n.title.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+    n.content.toLowerCase().includes(deferredSearch.toLowerCase())
+  ), [notes, deferredSearch])
 
   const handleNewNote = async () => {
     const supabase = getSupabase()
