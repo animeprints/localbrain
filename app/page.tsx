@@ -88,8 +88,16 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="px-5 md:px-8 py-10 md:py-16 border-t border-[rgba(255,255,255,0.04)] text-center text-xs md:text-sm text-[#888e90]">
-        <p>LocalBrain — Your data stays yours. Self-hosted AI knowledge graph.</p>
+      <footer className="px-5 md:px-8 py-10 md:py-16 border-t border-[rgba(255,255,255,0.04)] text-xs md:text-sm text-[#888e90]">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p>LocalBrain — Your data stays yours. Self-hosted AI knowledge graph.</p>
+            <div className="flex items-center gap-4">
+              <Link href="/privacy" className="hover:text-[#fcfdff] transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-[#fcfdff] transition-colors">Terms &amp; Conditions</Link>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   )
