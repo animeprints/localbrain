@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/crypto'
 import { callLLM, callEmbedding } from '@/lib/llm/adapter'
+import { checkRateLimit } from '@/lib/rateLimit'
 import type { ProviderName } from '@/lib/llm/adapter'
 
 function chunkText(text: string, chunkSize = 500, overlap = 100): string[] {
@@ -69,6 +70,11 @@ export async function POST(request: NextRequest) {
   const { user, error } = await getAuthenticatedUser()
   if (error) return error
 
+  const rateLimit = checkRateLimit(`ingest:${user!.id}`, 10, 60000)
+  if (!rateLimit.allowed) {
+    return Response.json({ error: 'Rate limit exceeded. Try again in a minute.' }, { status: 429 })
+  }
+
   const body = await request.json()
   const { noteId, title, content } = body as {
     noteId?: string
@@ -76,8 +82,12 @@ export async function POST(request: NextRequest) {
     content?: string
   }
 
-  if (!content) {
+  if (!content || typeof content !== 'string') {
     return Response.json({ error: 'Missing content' }, { status: 400 })
+  }
+
+  if (content.length > 50000) {
+    return Response.json({ error: 'Content too long (max 50000 characters)' }, { status: 400 })
   }
 
   const supabase = await createClient()

@@ -92,14 +92,24 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Cannot create self-loop' }, { status: 400 })
     }
 
-    const { data: existing } = await supabase
+    // Check for existing edge using parameterized queries
+    const { data: existingSource } = await supabase
       .from('graph_edges')
       .select('id')
       .eq('user_id', user!.id)
-      .or(`and(source_node_id.eq.${sourceNodeId},target_node_id.eq.${targetNodeId}),and(source_node_id.eq.${targetNodeId},target_node_id.eq.${sourceNodeId})`)
+      .eq('source_node_id', sourceNodeId)
+      .eq('target_node_id', targetNodeId)
       .single()
 
-    if (existing) {
+    const { data: existingTarget } = await supabase
+      .from('graph_edges')
+      .select('id')
+      .eq('user_id', user!.id)
+      .eq('source_node_id', targetNodeId)
+      .eq('target_node_id', sourceNodeId)
+      .single()
+
+    if (existingSource || existingTarget) {
       return Response.json({ error: 'Edge already exists' }, { status: 409 })
     }
 

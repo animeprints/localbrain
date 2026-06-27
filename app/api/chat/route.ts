@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/crypto'
 import { callLLM, callEmbedding } from '@/lib/llm/adapter'
+import { checkRateLimit } from '@/lib/rateLimit'
 import type { ProviderName } from '@/lib/llm/adapter'
 
 async function getUserApiKey(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<{ provider: ProviderName; apiKey: string } | null> {
@@ -30,14 +31,23 @@ export async function POST(request: NextRequest) {
   const { user, error } = await getAuthenticatedUser()
   if (error) return error
 
+  const rateLimit = checkRateLimit(`chat:${user!.id}`, 30, 60000)
+  if (!rateLimit.allowed) {
+    return Response.json({ error: 'Rate limit exceeded. Try again in a minute.' }, { status: 429 })
+  }
+
   const body = await request.json()
   const { query, messages } = body as {
     query: string
     messages: Array<{ role: string; content: string }>
   }
 
-  if (!query) {
-    return Response.json({ error: 'Missing query' }, { status: 400 })
+  if (!query || typeof query !== 'string') {
+    return Response.json({ error: 'Missing or invalid query' }, { status: 400 })
+  }
+
+  if (query.length > 10000) {
+    return Response.json({ error: 'Query too long (max 10000 characters)' }, { status: 400 })
   }
 
   const supabase = await createClient()
