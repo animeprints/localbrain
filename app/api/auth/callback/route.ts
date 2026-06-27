@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      const redirectUrl = new URL(next, origin)
+      const response = NextResponse.redirect(redirectUrl.toString())
+      // Ensure cookies are set on the response
+      return response
     }
   }
 
