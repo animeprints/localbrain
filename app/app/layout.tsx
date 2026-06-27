@@ -10,7 +10,9 @@ import ExportNotes from '@/components/notes/ExportNotes'
 import NoteTagManager from '@/components/notes/NoteTagManager'
 import UrlImporter from '@/components/notes/UrlImporter'
 import StudyTools from '@/components/study/StudyTools'
+import TeacherTools from '@/components/study/TeacherTools'
 import CorporateTools from '@/components/corporate/CorporateTools'
+import AssistantTools from '@/components/corporate/AssistantTools'
 import PomodoroTimer from '@/components/study/PomodoroTimer'
 import ToastProvider from '@/components/ui/ToastProvider'
 import { useKeyboardShortcuts } from '@/components/ui/KeyboardShortcuts'
@@ -370,7 +372,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {selectedNote.content.trim().length > 50 && (
                 <div className="flex flex-col border-t border-[rgba(255,255,255,0.06)]">
                   <StudyTools content={selectedNote.content} />
+                  <TeacherTools content={selectedNote.content} />
                   <CorporateTools content={selectedNote.content} />
+                  <AssistantTools content={selectedNote.content} />
                 </div>
               )}
             </div>
