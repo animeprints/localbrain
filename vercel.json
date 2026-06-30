@@ -6,5 +6,11 @@
     "app/api/notes/ingest/route.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/ping",
+      "schedule": "0 0 */2 * *"
+    }
+  ]
 }
